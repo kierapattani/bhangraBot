@@ -1,0 +1,29 @@
+# Environment and credentials
+.env
+*.env
+.env.*
+!.env.example
+
+# Scheduled messages data
+data/selfbot_scheduled_messages.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
