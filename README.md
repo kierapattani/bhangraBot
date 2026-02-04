@@ -44,18 +44,3 @@ Menu-driven interface for managing scheduled messages.
 ```bash
 python src/groupme_selfbot.py
 ```
-
-## Project Structure
-
-```
-bhangraBot/
-├── .env                 # Your credentials (git ignored)
-├── .env.example         # Credential template
-├── requirements.txt     # Dependencies
-├── data/
-│   └── selfbot_scheduled_messages.json
-└── src/
-    ├── selfbot_daemon.py         # Background daemon
-    ├── selfbot_quick_schedule.py # Quick CLI scheduler
-    └── groupme_selfbot.py        # Interactive mode
-```
