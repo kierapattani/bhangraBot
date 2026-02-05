@@ -28,12 +28,32 @@ def save_messages(messages: dict[str, str]) -> None:
         json.dump(messages, f, indent=2)
 
 
+SEND_HOUR = 10  # Messages are sent at 10:00 AM
+SEND_MINUTE = 0
+
+
 def validate_date(date_str: str) -> None:
-    """Validate date format and ensure it's in the future."""
+    """Validate date format and ensure it's schedulable.
+
+    - Past dates are rejected
+    - Today's date is only allowed if current time is before 10:00 AM
+    - Future dates are always allowed
+    """
     try:
         date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-        if date_obj < datetime.now().date():
-            raise HTTPException(status_code=400, detail="Date must be in the future")
+        now = datetime.now()
+        today = now.date()
+
+        if date_obj < today:
+            raise HTTPException(status_code=400, detail="Date must be today or in the future")
+
+        if date_obj == today:
+            cutoff_time = now.replace(hour=SEND_HOUR, minute=SEND_MINUTE, second=0, microsecond=0)
+            if now >= cutoff_time:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Too late to schedule for today. Must be before {SEND_HOUR}:{SEND_MINUTE:02d} AM"
+                )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
 

@@ -3,9 +3,8 @@ import os
 import sys
 import requests
 import json
-import schedule
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -79,18 +78,51 @@ class GroupMeSelfBotDaemon:
                 del messages[today]
                 self.save_messages(messages)
 
+    def get_next_send_time(self, hour, minute):
+        """Calculate the next occurrence of the target time."""
+        now = datetime.now()
+        target = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        if now >= target:
+            target += timedelta(days=1)
+        return target
+
     def run(self, send_time="10:00"):
         group_name = self.get_group_name()
         print(f"Group: {group_name}")
         print(f"Scheduled time: {send_time}")
         print("Running... (Ctrl+C to stop)")
 
-        schedule.every().day.at(send_time).do(self.check_and_send)
+        hour, minute = map(int, send_time.split(":"))
 
         try:
             while True:
-                schedule.run_pending()
+                target = self.get_next_send_time(hour, minute)
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] Next send: {target.strftime('%Y-%m-%d %H:%M:%S')}")
+
+                # Sleep until 100ms before target
+                while True:
+                    now = datetime.now()
+                    seconds_until = (target - now).total_seconds()
+
+                    if seconds_until <= 0.1:
+                        break
+                    elif seconds_until > 60:
+                        time.sleep(30)
+                    elif seconds_until > 5:
+                        time.sleep(1)
+                    else:
+                        time.sleep(0.01)
+
+                # Busy-wait for exact moment
+                while datetime.now() < target:
+                    pass
+
+                # Send immediately
+                self.check_and_send()
+
+                # Small delay to prevent double-send
                 time.sleep(1)
+
         except KeyboardInterrupt:
             print("\nStopped")
             sys.exit(0)

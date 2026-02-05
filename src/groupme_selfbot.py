@@ -63,9 +63,22 @@ class GroupMeSelfBot:
             print(f"Error: {e}")
             return False
 
-    def schedule_message(self, date_str, message):
+    def schedule_message(self, date_str, message, send_hour=10, send_minute=0):
         try:
-            datetime.strptime(date_str, '%Y-%m-%d')
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+            now = datetime.now()
+            today = now.date()
+
+            if date_obj < today:
+                print("Date must be today or in the future")
+                return False
+
+            if date_obj == today:
+                cutoff_time = now.replace(hour=send_hour, minute=send_minute, second=0, microsecond=0)
+                if now >= cutoff_time:
+                    print(f"Too late to schedule for today. Must be before {send_hour}:{send_minute:02d} AM")
+                    return False
+
             self.scheduled_messages[date_str] = message
             self.save_messages()
             print(f"Scheduled for {date_str}")
