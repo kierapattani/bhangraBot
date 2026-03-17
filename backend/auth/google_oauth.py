@@ -1,5 +1,6 @@
 import secrets
 import httpx
+from typing import Optional
 from urllib.parse import urlencode
 from backend.config import settings
 
@@ -27,7 +28,7 @@ def get_google_auth_url(state: str) -> str:
     return f"{GOOGLE_AUTH_URL}?{urlencode(params)}"
 
 
-async def exchange_code_for_tokens(code: str) -> dict | None:
+async def exchange_code_for_tokens(code: str) -> Optional[dict]:
     """
     Exchange authorization code for access token.
     Returns token response dict or None if failed.
@@ -48,7 +49,7 @@ async def exchange_code_for_tokens(code: str) -> dict | None:
         return None
 
 
-async def get_user_email(access_token: str) -> str | None:
+async def get_user_email(access_token: str) -> Optional[str]:
     """
     Get user email from Google userinfo endpoint.
     Returns email or None if failed.

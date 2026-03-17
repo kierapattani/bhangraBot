@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 from jose import jwt, JWTError
 from backend.config import settings
 
@@ -14,7 +15,7 @@ def create_jwt_token(email: str) -> str:
     return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
-def verify_jwt_token(token: str) -> str | None:
+def verify_jwt_token(token: str) -> Optional[str]:
     """
     Verify a JWT token and return the email if valid.
     Returns None if token is invalid or expired.

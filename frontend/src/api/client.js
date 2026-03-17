@@ -11,7 +11,7 @@ async function request(endpoint, options = {}) {
   })
 
   if (response.status === 401) {
-    window.location.href = '/login'
+    window.location.href = import.meta.env.BASE_URL + 'login'
     throw new Error('Unauthorized')
   }
 
