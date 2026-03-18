@@ -4,7 +4,7 @@ import sys
 import requests
 import json
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -59,17 +59,17 @@ class GroupMeSelfBotDaemon:
         try:
             response = requests.post(url, params=params, json=data)
             if response.status_code == 201:
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] Message sent")
+                print(f"[{datetime.now(timezone.utc).strftime('%H:%M:%S UTC')}] Message sent")
                 return True
             else:
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] Failed: {response.status_code}")
+                print(f"[{datetime.now(timezone.utc).strftime('%H:%M:%S UTC')}] Failed: {response.status_code}")
                 return False
         except Exception as e:
-            print(f"[{datetime.now().strftime('%H:%M:%S')}] Error: {e}")
+            print(f"[{datetime.now(timezone.utc).strftime('%H:%M:%S UTC')}] Error: {e}")
             return False
 
     def check_and_send(self):
-        today = datetime.now().strftime('%Y-%m-%d')
+        today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
         messages = self.load_messages()
 
         if today in messages:
@@ -79,17 +79,17 @@ class GroupMeSelfBotDaemon:
                 self.save_messages(messages)
 
     def get_next_send_time(self, hour, minute):
-        """Calculate the next occurrence of the target time."""
-        now = datetime.now()
+        """Calculate the next occurrence of the target UTC time."""
+        now = datetime.now(timezone.utc)
         target = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
         if now >= target:
             target += timedelta(days=1)
         return target
 
-    def run(self, send_time="10:00"):
+    def run(self, send_time="15:00"):
         group_name = self.get_group_name()
         print(f"Group: {group_name}")
-        print(f"Scheduled time: {send_time}")
+        print(f"Scheduled time: {send_time} UTC (10:00 AM CDT)")
         print("Running... (Ctrl+C to stop)")
 
         hour, minute = map(int, send_time.split(":"))
@@ -97,11 +97,11 @@ class GroupMeSelfBotDaemon:
         try:
             while True:
                 target = self.get_next_send_time(hour, minute)
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] Next send: {target.strftime('%Y-%m-%d %H:%M:%S')}")
+                print(f"[{datetime.now(timezone.utc).strftime('%H:%M:%S')} UTC] Next send: {target.strftime('%Y-%m-%d %H:%M:%S')} UTC")
 
                 # Sleep until 100ms before target
                 while True:
-                    now = datetime.now()
+                    now = datetime.now(timezone.utc)
                     seconds_until = (target - now).total_seconds()
 
                     if seconds_until <= 0.1:
@@ -113,8 +113,8 @@ class GroupMeSelfBotDaemon:
                     else:
                         time.sleep(0.01)
 
-                # Busy-wait for exact moment
-                while datetime.now() < target:
+                # Busy-wait for exact moment (fires at first microsecond of target second)
+                while datetime.now(timezone.utc) < target:
                     pass
 
                 # Send immediately
@@ -141,5 +141,5 @@ if __name__ == "__main__":
 
     daemon = GroupMeSelfBotDaemon(access_token, group_id)
 
-    send_time = sys.argv[3] if len(sys.argv) > 3 else "10:00"
+    send_time = sys.argv[3] if len(sys.argv) > 3 else "15:00"
     daemon.run(send_time)
