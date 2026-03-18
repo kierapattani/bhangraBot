@@ -5,6 +5,7 @@ import requests
 import json
 import time
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -79,17 +80,18 @@ class GroupMeSelfBotDaemon:
                 self.save_messages(messages)
 
     def get_next_send_time(self, hour, minute):
-        """Calculate the next occurrence of the target UTC time."""
-        now = datetime.now(timezone.utc)
+        """Calculate the next occurrence of the target Central time."""
+        central = ZoneInfo("America/Chicago")
+        now = datetime.now(central)
         target = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
         if now >= target:
             target += timedelta(days=1)
         return target
 
-    def run(self, send_time="15:00"):
+    def run(self, send_time="10:00"):
         group_name = self.get_group_name()
         print(f"Group: {group_name}")
-        print(f"Scheduled time: {send_time} UTC (10:00 AM CDT)")
+        print(f"Scheduled time: {send_time} Central")
         print("Running... (Ctrl+C to stop)")
 
         hour, minute = map(int, send_time.split(":"))
@@ -141,5 +143,5 @@ if __name__ == "__main__":
 
     daemon = GroupMeSelfBotDaemon(access_token, group_id)
 
-    send_time = sys.argv[3] if len(sys.argv) > 3 else "15:00"
+    send_time = sys.argv[3] if len(sys.argv) > 3 else "10:00"
     daemon.run(send_time)

@@ -1,46 +1,57 @@
-# GroupMe Selfbot
+# BhangraBot
 
-A scheduled message bot for GroupMe that sends messages from your personal account.
+A web app for scheduling GroupMe messages from your personal account. Built with Vue 3 and FastAPI, with Google OAuth for access control.
 
-## Setup
+## Local Development
 
-1. Install dependencies:
-   ```
+### Prerequisites
+
+- Python 3.10+
+- Node.js 18+
+
+### Setup
+
+1. Install Python dependencies:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
    pip install -r requirements.txt
    ```
 
-2. Copy `.env.example` to `.env` and add your credentials:
+2. Install frontend dependencies:
+   ```bash
+   cd frontend
+   npm install
    ```
-   ACCESS_TOKEN=your_token_here
-   GROUP_ID=your_group_id_here
+
+3. Create a `.env` file in the project root:
+   ```env
+   ACCESS_TOKEN=your_groupme_access_token
+   GROUP_ID=your_groupme_group_id
+
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   GOOGLE_REDIRECT_URI=http://localhost:5173/auth/callback
+
+   JWT_SECRET_KEY=any_random_string_for_dev
+   JWT_EXPIRATION_HOURS=24
+
+   ALLOWED_EMAILS=your_email@gmail.com
+
+   FRONTEND_URL=http://localhost:5173
+   ENVIRONMENT=development
    ```
 
-   - **Access Token**: Get from https://dev.groupme.com/ (click "Access Token")
-   - **Group ID**: From your group URL: `web.groupme.com/groups/12345678`
+4. Start the backend:
+   ```bash
+   uvicorn backend.main:app --reload
+   ```
 
-## Usage
+5. Start the frontend dev server:
+   ```bash
+   cd frontend
+   npm run dev
+   ```
 
-### Daemon Mode (recommended)
-Runs in background and sends scheduled messages automatically.
+Visit `http://localhost:5173` to use the app.
 
-```bash
-# Default time (10:00)
-python src/selfbot_daemon.py
-
-# Custom time
-python src/selfbot_daemon.py TOKEN GROUP_ID 18:30
-```
-
-### Quick Schedule
-Add a message to the schedule without starting the daemon.
-
-```bash
-python src/selfbot_quick_schedule.py 2026-02-03 "Hello everyone!"
-```
-
-### Interactive Mode
-Menu-driven interface for managing scheduled messages.
-
-```bash
-python src/groupme_selfbot.py
-```
